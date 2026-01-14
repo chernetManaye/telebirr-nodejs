@@ -7,7 +7,6 @@ import {
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
-import { TELEBIRR_URLS } from "../constants/urls";
 import { TelebirrMode, IntegrationOption } from "../config/telebirrConfig";
 
 export async function requestCreateOrder(
@@ -54,7 +53,7 @@ export async function requestCreateOrder(
 
   try {
     const response = await client.post<CreateOrderResponse>(
-      `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/preOrder`,
+      "/payment/v1/merchant/preOrder",
       req,
       {
         headers: {

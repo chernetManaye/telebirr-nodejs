@@ -30,16 +30,16 @@ export class TelebirrClient {
 
     const token = await applyFabricToken(this.httpClient, {
       appSecret: this.config.appSecret,
+
       mode: this.config.mode,
     });
 
+    if (!token) return;
     this.token = token;
     return token;
   }
 
-  async GenerateCheckoutUrl(
-    input: GenerateCheckoutUrlInput
-  ): Promise<string | undefined> {
+  async checkout(input: GenerateCheckoutUrlInput): Promise<string | void> {
     const token = await this.getFabricToken();
     if (!token) return;
 

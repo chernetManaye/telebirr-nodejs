@@ -20,20 +20,9 @@ export interface SimulatorCredentials {
   merchantPrivateKey: string;
 }
 
-/**
- * Generates Telebirr simulator credentials.
- * ⚠️ For simulation/testing only.
- */
-export function generateCredentials(): SimulatorCredentials {
-  const privateKeyPath = path.join(
-    __dirname,
-    "..",
-    "key",
-    "telebirr_private.pem"
-  );
-
-  const merchantPrivateKey = fs.readFileSync(privateKeyPath, "utf8");
-
+export function generateCredentials(
+  merchantPrivateKey: string
+): SimulatorCredentials {
   return {
     fabricAppId: randomUUID(),
     fabricAppSecret: randomBytes(16).toString("hex"),

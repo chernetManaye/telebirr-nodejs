@@ -1,8 +1,7 @@
+import { Agent } from "node:https";
 import axios from "axios";
 import { TelebirrConfig } from "../config/telebirrConfig";
 import { TELEBIRR_URLS } from "../constants/urls";
-
-import { Agent } from "node:https";
 
 export function createTelebirrHttpClient(config: TelebirrConfig) {
   return axios.create({

@@ -2,7 +2,6 @@ import { AxiosInstance } from "axios";
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
-import { TELEBIRR_URLS } from "../constants/urls";
 import { TelebirrMode, IntegrationOption } from "../config/telebirrConfig";
 import {
   RefundInput,
@@ -46,7 +45,7 @@ export async function requestRefund(
 
   try {
     const response = await client.post<RefundResponse>(
-      `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/refund`,
+      "/payment/v1/merchant/refund",
       req,
       {
         headers: {
