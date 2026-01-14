@@ -24,7 +24,7 @@ export async function requestCreateOrder(
     http: boolean;
     integrationOption: IntegrationOption;
   }
-): Promise<CreateOrderResponse> {
+): Promise<CreateOrderResponse | void> {
   const req: TelebirrPreorderRequest = {
     timestamp: createTimestamp(),
     nonce_str: createNonceStr(),
@@ -52,15 +52,19 @@ export async function requestCreateOrder(
   req.sign = signRequest(req, config.privateKey);
   req.sign_type = "SHA256WithRSA";
 
-  const response = await client.post<CreateOrderResponse>(
-    `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/preOrder`,
-    req,
-    {
-      headers: {
-        Authorization: fabricToken,
-      },
-    }
-  );
+  try {
+    const response = await client.post<CreateOrderResponse>(
+      `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/preOrder`,
+      req,
+      {
+        headers: {
+          Authorization: fabricToken,
+        },
+      }
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
 }

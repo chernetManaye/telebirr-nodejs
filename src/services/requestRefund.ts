@@ -24,7 +24,7 @@ export async function requestRefund(
     http: boolean;
     integrationOption: IntegrationOption;
   }
-): Promise<RefundResponse> {
+): Promise<RefundResponse | void> {
   const req: TelebirrRefundRequest = {
     timestamp: createTimestamp(),
     nonce_str: createNonceStr(),
@@ -44,15 +44,19 @@ export async function requestRefund(
   req.sign = signRequest(req, config.privateKey);
   req.sign_type = "SHA256WithRSA";
 
-  const response = await client.post<RefundResponse>(
-    `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/refund`,
-    req,
-    {
-      headers: {
-        Authorization: fabricToken,
-      },
-    }
-  );
+  try {
+    const response = await client.post<RefundResponse>(
+      `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/refund`,
+      req,
+      {
+        headers: {
+          Authorization: fabricToken,
+        },
+      }
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
 }

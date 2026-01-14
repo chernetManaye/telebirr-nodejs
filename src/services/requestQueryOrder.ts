@@ -23,7 +23,7 @@ export async function requestQueryOrder(
     http: boolean;
     integrationOption: IntegrationOption;
   }
-): Promise<QueryOrderResponse> {
+): Promise<QueryOrderResponse | void> {
   const req: TelebirrQueryorderRequest = {
     timestamp: createTimestamp(),
     nonce_str: createNonceStr(),
@@ -39,15 +39,19 @@ export async function requestQueryOrder(
   req.sign = signRequest(req, config.privateKey);
   req.sign_type = "SHA256WithRSA";
 
-  const response = await client.post<QueryOrderResponse>(
-    `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/queryOrder`,
-    req,
-    {
-      headers: {
-        Authorization: fabricToken,
-      },
-    }
-  );
+  try {
+    const response = await client.post<QueryOrderResponse>(
+      `${TELEBIRR_URLS[config.mode].apiBase}/payment/v1/merchant/queryOrder`,
+      req,
+      {
+        headers: {
+          Authorization: fabricToken,
+        },
+      }
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
 }

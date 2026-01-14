@@ -15,7 +15,7 @@ import { requestRefund } from "../services/requestRefund";
 
 export class TelebirrClient {
   private httpClient;
-  private token?: FabricTokenResponse;
+  private token?: typeof FabricTokenResponse;
   private config: TelebirrConfig;
 
   constructor(config: TelebirrConfig) {
@@ -23,7 +23,7 @@ export class TelebirrClient {
     this.httpClient = createTelebirrHttpClient(config);
   }
 
-  async getFabricToken(): Promise<FabricTokenResponse> {
+  async getFabricToken(): Promise<typeof FabricTokenResponse | void> {
     if (this.token && !this.isTokenExpired(this.token)) {
       return this.token;
     }
@@ -37,30 +37,33 @@ export class TelebirrClient {
     return token;
   }
 
-  async GenerateCheckoutUrl(input: GenerateCheckoutUrlInput): Promise<string> {
+  async GenerateCheckoutUrl(
+    input: GenerateCheckoutUrlInput
+  ): Promise<string | undefined> {
     const token = await this.getFabricToken();
+    if (!token) return;
 
-    const response: CreateOrderResponse = await requestCreateOrder(
+    const response: CreateOrderResponse | void = await requestCreateOrder(
       this.httpClient,
       token.token,
       input,
       this.config
     );
-
-    const prepayId = response.biz_content.prepay_id;
+    if (!response) return;
 
     return createCheckoutUrl({
       mode: this.config.mode,
-      prepayId,
+      prepayId: response.biz_content.prepay_id,
       merchantAppId: this.config.merchantAppId,
       merchantCode: this.config.merchantCode,
       privateKey: this.config.privateKey,
     });
   }
-  async queryOrder(input: string): Promise<QueryOrderResponse> {
+  async queryOrder(input: string): Promise<QueryOrderResponse | void> {
     const token = await this.getFabricToken();
+    if (!token) return;
 
-    const response: QueryOrderResponse = await requestQueryOrder(
+    const response: QueryOrderResponse | void = await requestQueryOrder(
       this.httpClient,
       token.token,
       input,
@@ -69,10 +72,10 @@ export class TelebirrClient {
 
     return response;
   }
-  async refund(input: RefundInput): Promise<RefundResponse> {
+  async refund(input: RefundInput): Promise<RefundResponse | void> {
     const token = await this.getFabricToken();
-
-    const response: RefundResponse = await requestRefund(
+    if (!token) return;
+    const response: RefundResponse | void = await requestRefund(
       this.httpClient,
       token.token,
       input,
@@ -82,7 +85,12 @@ export class TelebirrClient {
     return response;
   }
 
-  private isTokenExpired(token: FabricTokenResponse): boolean {
+  private isTokenExpired(
+    token: typeof FabricTokenResponse
+  ): boolean | undefined {
+    if (!token) {
+      return;
+    }
     const now = new Date();
     const expiry = this.parseTelebirrDate(token.expirationDate);
     return now >= expiry;

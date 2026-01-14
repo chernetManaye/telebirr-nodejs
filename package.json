@@ -1,5 +1,5 @@
 {
-  "name": "telebirr-node",
+  "name": "telebirr-nodejs",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -16,16 +16,14 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "watch": "tsx src/dev.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
-  "author": "",
+  "author": "chernet manaye",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^25.0.6",
     "tsup": "^8.5.1",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {

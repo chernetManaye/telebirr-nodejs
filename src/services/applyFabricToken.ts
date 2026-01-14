@@ -8,12 +8,16 @@ import { TELEBIRR_URLS } from "../constants/urls";
 export async function applyFabricToken(
   client: AxiosInstance,
   payload: ApplyFabricTokenRequest
-): Promise<FabricTokenResponse> {
+): Promise<FabricTokenResponse | void> {
   const appSecret = payload.appSecret;
-  const response = await client.post<FabricTokenResponse>(
-    `${TELEBIRR_URLS[payload.mode].apiBase}/payment/v1/token`,
-    { appSecret }
-  );
+  try {
+    const response = await client.post<FabricTokenResponse>(
+      `${TELEBIRR_URLS[payload.mode].apiBase}/payment/v1/token`,
+      { appSecret }
+    );
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
 }

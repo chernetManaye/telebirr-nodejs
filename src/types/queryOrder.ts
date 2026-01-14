@@ -36,8 +36,7 @@ export interface QueryOrderResponse {
   nonce_str: string;
   biz_content: {
     merch_order_id: string;
-    order_status: string;
-    trade_status: TelebirrTradeStatus;
+    order_status: TelebirrTradeStatus;
     payment_order_id: string;
     trans_time: string;
     trans_currency: "ETB";

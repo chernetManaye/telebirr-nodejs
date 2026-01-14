@@ -4,8 +4,10 @@ export interface ApplyFabricTokenRequest {
   mode: TelebirrMode;
 }
 
-export interface FabricTokenResponse {
+export interface ApplyFabricTokenResponse {
   token: string; // "Bearer xxxxx"
   effectiveDate: string; // yyyyMMddHHmmss
   expirationDate: string; // yyyyMMddHHmmss
 }
+
+export let FabricTokenResponse: ApplyFabricTokenResponse | undefined;
