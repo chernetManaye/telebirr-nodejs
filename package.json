@@ -1,7 +1,7 @@
 {
   "name": "telebirr-nodejs",
-  "version": "1.0.8",
-  "description": "Unofficial Telebirr Node.js SDK.",
+  "version": "1.1.0",
+  "description": "Unofficial Node.js SDK for Telebirr C2B payments with automatic request signing, Fabric token handling, checkout URL generation, simulator support, and simplified refunds & payment status APIs.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,8 +30,20 @@
     "ethiopia",
     "payment",
     "fintech",
-    "nodejs"
+    "nodejs",
+    "telebirr-node",
+    "telebirr-nodejs",
+    "telebirr-payment",
+    "ethiopia-payment",
+    "c2b-payment",
+    "b2b-payment",
+    "nodejs-payment",
+    "payment-gateway"
   ],
-  "author": "chernet manaye",
-  "license": "MIT"
+  "author": "Chernet Manaye (https://github.com/chernetManaye)",
+  "license": "MIT",
+  "homepage": "https://github.com/chernetManaye/telebirr-nodejs",
+  "bugs": {
+    "url": "https://github.com/chernetManaye/telebirr-nodejs/issues"
+  }
 }

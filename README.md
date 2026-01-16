@@ -45,19 +45,18 @@ You should never hard-code secrets. Always load them from process.env.
 ---
 
 ```bash
-import { TelebirrClient } from "telebirr-nodejs";
+import { C2B } from "telebirr-nodejs";
 
-const client = new TelebirrClient({
+const c2bClient = new C2B({
   mode: "sandbox", // "simulate" | "sandbox" | "production"
-  appId: process.env.FABRIC_APP_ID!,
-  appSecret: process.env.FABRIC_APP_SECRET!,
-  merchantAppId: process.env.MERCHANT_APP_ID!,
-  merchantCode: process.env.MERCHANT_CODE!,
-  merchantPrivateKey: process.env.MERCHANT_PRIVATE_KEY!,
-  notifyUrl: process.env.TELEBIRR_NOTIFY_URL!,
-  redirectUrl: process.env.TELEBIRR_REDIRECT_URL!,
+  appId: process.env.FABRIC_APP_ID,
+  appSecret: process.env.FABRIC_APP_SECRET,
+  merchantAppId: process.env.MERCHANT_APP_ID,
+  merchantCode: process.env.MERCHANT_CODE,
+  merchantPrivateKey: process.env.MERCHANT_PRIVATE_KEY,
+  notifyUrl: process.env.TELEBIRR_NOTIFY_URL,
+  redirectUrl: process.env.TELEBIRR_REDIRECT_URL,
   http: true, // allow HTTP in simulator mode
-  IntegrationOption: "C2B",
 });
 ```
 
@@ -89,7 +88,7 @@ Creates an order and redirects the user to the Telebirr checkout page.
 
 ```bash
 app.post("/payment/initiate", async (req, res) => {
-    const checkoutUrl = await client.preOrder({
+    const checkoutUrl = await c2bClient.preOrder({
         merchOrderId: "order123",
         title: "Phone",
         amount: "12",
@@ -112,7 +111,7 @@ Used to check the payment result using the merchant order ID.
 app.get("/payment/status/:merchOrderId", async (req, res) => {
     const { merchOrderId } = req.body;
 
-    const info = await client.queryOrder(merchOrderId);
+    const info = await c2bClient.queryOrder(merchOrderId);
 
     res.json(info);
 });
@@ -129,7 +128,7 @@ Refunds a completed transaction.
 
 ```bash
 app.post("/payment/refund", async (req, res) => {
-    const refundData = await client.refundOrder({
+    const refundData = await c2bClient.refundOrder({
         merchOrderId: "order123",
         refundRequestNo: "original-transaction-id",
         refundReason: "customer request",
@@ -151,19 +150,24 @@ https://developer.ethiotelecom.et/docs/H5%20C2B%20Web%20Payment%20Integration%20
 To use the simulator provided by this package, set the mode to simulate.
 
 ```bash
-import { TelebirrClient } from "telebirr-nodejs";
+import { C2B } from "telebirr-nodejs";
 
-const client = new TelebirrClient({
+const c2bClient = new C2B({
     mode: "simulate",
+    appId: process.env.FABRIC_APP_ID,
+    appSecret: process.env.FABRIC_APP_SECRET,
+    merchantAppId: process.env.MERCHANT_APP_ID,
+    merchantCode: process.env.MERCHANT_CODE,
+    merchantPrivateKey: process.env.MERCHANT_PRIVATE_KEY,
     notifyUrl: "https://example.com/notify",
     redirectUrl: "https://example.com/redirect",
-    http: true,
-    IntegrationOption: "C2B",
+    http: true
 });
 
 ```
 
-This simulator is for learning and development purposes only.
+This mode will generate credentials and add the in .env file in your project root directory
+The simulator is for learning and development purposes only.
 The simulation server is provided by this package, not by Telebirr. For real testing, use Telebirr’s sandbox mode and whitelist your public IP address in the Telebirr portal.
 
 ---
@@ -203,3 +207,7 @@ generateKeys({
 This will generate two .pem files in your root directory.
 
 The merchantPrivateKey option always accepts a string, so you must read the private key file using Node.js fs and pass the value to the client configuration.
+
+## License
+
+MIT © Chernet Manaye

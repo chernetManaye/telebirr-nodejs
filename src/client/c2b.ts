@@ -1,34 +1,26 @@
-import { TelebirrConfig } from "./types/telebirrConfig";
-import { FabricTokenResponse } from "./types/fabricToken";
-import { GenerateCheckoutUrlInput } from "./types/createOrder";
-import { generateCredentials } from "./utils/credentials";
-import { QueryOrderResponse } from "./types/queryOrder";
-import { RefundInput, RefundResponse } from "./types/refund";
-import { requestToken } from "./services/requestToken";
-import { requestCreateOrder } from "./services/requestCreateOrder";
-import { requestRefund } from "./services/requestRefundOrder";
-import { requestQueryOrder } from "./services/requestQueryOrder";
-import { TELEBIRR_URLS, CHECKOUT_OTHER_PARAMS } from "./constants/urls";
-import { signRequest } from "./utils/signature";
-import { createTimestamp } from "./utils/timestamp";
-import { createNonceStr } from "./utils/nonce";
+import { TelebirrConfig } from "../types/telebirrConfig";
+import { FabricTokenResponse } from "../types/fabricToken";
+import { GenerateCheckoutUrlInput } from "../types/createOrder";
+import { generateCredentials } from "../utils/credentials";
+import { QueryOrderResponse } from "../types/queryOrder";
+import { RefundInput, RefundResponse } from "../types/refund";
+import { requestToken } from "../services/requestToken";
+import { requestCreateOrder } from "../services/requestCreateOrder";
+import { requestRefund } from "../services/requestRefundOrder";
+import { requestQueryOrder } from "../services/requestQueryOrder";
+import { TELEBIRR_URLS, CHECKOUT_OTHER_PARAMS } from "../constants/urls";
+import { signRequest } from "../utils/signature";
+import { createTimestamp } from "../utils/timestamp";
+import { createNonceStr } from "../utils/nonce";
 
-export class TelebirrClient {
+export class C2B {
   private token?: typeof FabricTokenResponse;
   private config: TelebirrConfig;
 
   constructor(config: TelebirrConfig) {
     if (config.mode === "simulate") {
-      const creds = generateCredentials();
-
-      this.config = {
-        ...config,
-        appId: config.appId ?? creds.fabricAppId,
-        appSecret: config.appSecret ?? creds.fabricAppSecret,
-        merchantAppId: config.merchantAppId ?? creds.merchantAppId,
-        merchantCode: config.merchantCode ?? creds.merchantCode,
-        privateKey: creds.merchantPrivateKey,
-      };
+      generateCredentials();
+      this.config = config;
     } else {
       this.config = config;
     }
@@ -117,7 +109,7 @@ export class TelebirrClient {
     const now = Date.now();
     const expiry = this.parseTelebirrDate(token.expirationDate).getTime();
 
-    return now >= expiry - TelebirrClient.TOKEN_EXPIRY_SAFETY_WINDOW_MS;
+    return now >= expiry - C2B.TOKEN_EXPIRY_SAFETY_WINDOW_MS;
   }
 
   private parseTelebirrDate(value: string): Date {

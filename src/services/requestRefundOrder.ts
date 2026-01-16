@@ -3,7 +3,7 @@ import https from "https";
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
-import { TelebirrMode, IntegrationOption } from "../types/telebirrConfig";
+import { TelebirrMode } from "../types/telebirrConfig";
 import {
   RefundInput,
   RefundResponse,
@@ -21,7 +21,6 @@ export function requestRefund(
     merchantCode: string;
     privateKey: string;
     http: boolean;
-    integrationOption: IntegrationOption;
   }
 ): Promise<{
   data: RefundResponse;

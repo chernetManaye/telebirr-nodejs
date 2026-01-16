@@ -1,5 +1,4 @@
 export type TelebirrMode = "simulate" | "sandbox" | "production";
-export type IntegrationOption = "C2B" | "B2B";
 export interface TelebirrConfig {
   appId: string;
   appSecret: string;
@@ -10,5 +9,4 @@ export interface TelebirrConfig {
   redirectUrl: string;
   mode: TelebirrMode;
   http: boolean;
-  integrationOption: IntegrationOption;
 }

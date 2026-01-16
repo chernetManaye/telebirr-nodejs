@@ -7,7 +7,7 @@ import {
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
-import { TelebirrMode, IntegrationOption } from "../types/telebirrConfig";
+import { TelebirrMode } from "../types/telebirrConfig";
 import { TELEBIRR_URLS } from "../constants/urls";
 
 export function requestQueryOrder(
@@ -23,7 +23,6 @@ export function requestQueryOrder(
     redirectUrl: string;
     mode: TelebirrMode;
     http: boolean;
-    integrationOption: IntegrationOption;
   }
 ): Promise<{
   data: QueryOrderResponse;
