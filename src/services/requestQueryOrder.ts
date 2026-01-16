@@ -1,4 +1,5 @@
-import { AxiosInstance } from "axios";
+import http from "http";
+import https from "https";
 import {
   TelebirrQueryorderRequest,
   QueryOrderResponse,
@@ -6,51 +7,107 @@ import {
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
-import { TelebirrMode, IntegrationOption } from "../config/telebirrConfig";
+import { TelebirrMode, IntegrationOption } from "../types/telebirrConfig";
+import { TELEBIRR_URLS } from "../constants/urls";
 
-export async function requestQueryOrder(
-  client: AxiosInstance,
+export function requestQueryOrder(
   fabricToken: string,
-  input: string,
+  merchOrderId: string,
   config: {
-    mode: TelebirrMode;
+    appId: string;
+    appSecret: string;
     merchantAppId: string;
     merchantCode: string;
+    privateKey: string;
     notifyUrl: string;
     redirectUrl: string;
-    privateKey: string;
+    mode: TelebirrMode;
     http: boolean;
     integrationOption: IntegrationOption;
   }
-): Promise<QueryOrderResponse | void> {
-  const req: TelebirrQueryorderRequest = {
+): Promise<{
+  data: QueryOrderResponse;
+  status: number;
+  headers: http.IncomingHttpHeaders;
+}> {
+  const reqBody: TelebirrQueryorderRequest = {
     timestamp: createTimestamp(),
     nonce_str: createNonceStr(),
-    method: "payment.refund",
+    method: "payment.queryorder",
     version: "1.0",
     biz_content: {
       appid: config.merchantAppId,
       merch_code: config.merchantCode,
-      merch_order_id: input,
+      merch_order_id: merchOrderId,
     },
   };
 
-  req.sign = signRequest(req, config.privateKey);
-  req.sign_type = "SHA256WithRSA";
+  reqBody.sign = signRequest(reqBody, config.privateKey);
+  reqBody.sign_type = "SHA256WithRSA";
 
-  try {
-    const response = await client.post<QueryOrderResponse>(
-      "/payment/v1/merchant/queryOrder",
-      req,
+  const payload = JSON.stringify(reqBody);
+
+  const baseUrl = TELEBIRR_URLS[config.mode].apiBase;
+  const isHttps = baseUrl.startsWith("https://");
+  const client = isHttps ? https : http;
+
+  return new Promise((resolve, reject) => {
+    const req = client.request(
+      `${baseUrl}/payment/v1/merchant/queryOrder`,
       {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(payload),
+          "X-APP-Key": config.appId,
           Authorization: fabricToken,
         },
+        ...(isHttps && { rejectUnauthorized: false }),
+      },
+      (res) => {
+        let raw = "";
+
+        res.on("data", (chunk) => {
+          raw += chunk;
+        });
+
+        res.on("end", () => {
+          const status = res.statusCode || 0;
+          let parsed: any = raw;
+
+          try {
+            parsed = JSON.parse(raw);
+          } catch {
+            // keep raw if parsing fails
+          }
+
+          if (status < 200 || status >= 300) {
+            return reject({
+              message: "Telebirr queryOrder request failed",
+              status,
+              data: parsed,
+              headers: res.headers,
+            });
+          }
+
+          resolve({
+            data: parsed,
+            status,
+            headers: res.headers,
+          });
+        });
       }
     );
 
-    return response.data;
-  } catch (error) {
-    console.log(error);
-  }
+    req.on("error", (err) => {
+      reject({
+        message: "Telebirr queryOrder network error",
+        cause: err,
+        code: (err as any).code,
+      });
+    });
+
+    req.write(payload);
+    req.end();
+  });
 }

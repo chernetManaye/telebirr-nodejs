@@ -1,57 +1,46 @@
 import http from "http";
 import https from "https";
-import {
-  GenerateCheckoutUrlInput,
-  CreateOrderResponse,
-  TelebirrPreorderRequest,
-} from "../types/createOrder";
 import { createNonceStr } from "../utils/nonce";
 import { createTimestamp } from "../utils/timestamp";
 import { signRequest } from "../utils/signature";
 import { TelebirrMode, IntegrationOption } from "../types/telebirrConfig";
+import {
+  RefundInput,
+  RefundResponse,
+  TelebirrRefundRequest,
+} from "../types/refund";
 import { TELEBIRR_URLS } from "../constants/urls";
 
-export function requestCreateOrder(
+export function requestRefund(
   fabricToken: string,
-  input: GenerateCheckoutUrlInput,
+  input: RefundInput,
   config: {
     mode: TelebirrMode;
     appId: string;
-    appSecret: string;
     merchantAppId: string;
     merchantCode: string;
-    notifyUrl: string;
-    redirectUrl: string;
     privateKey: string;
     http: boolean;
     integrationOption: IntegrationOption;
   }
 ): Promise<{
-  data: CreateOrderResponse;
+  data: RefundResponse;
   status: number;
   headers: http.IncomingHttpHeaders;
 }> {
-  const reqBody: TelebirrPreorderRequest = {
+  const reqBody: TelebirrRefundRequest = {
     timestamp: createTimestamp(),
     nonce_str: createNonceStr(),
-    method: "payment.preorder",
+    method: "payment.refund",
     version: "1.0",
     biz_content: {
       appid: config.merchantAppId,
       merch_code: config.merchantCode,
       merch_order_id: input.merchOrderId,
-      notify_url: config.notifyUrl,
-      redirect_url: config.redirectUrl,
-      trade_type: "Checkout",
-      title: input.title,
-      total_amount: input.amount,
       trans_currency: "ETB",
-      timeout_express: "120m",
-      business_type: "BuyGoods",
-      payee_type: "3000",
-      payee_identifier: config.merchantCode,
-      payee_identifier_type: "04",
-      callback_info: "From web",
+      actual_amount: input.amount,
+      refund_request_no: input.refundRequestNo,
+      refund_reason: input.refundReason,
     },
   };
 
@@ -66,7 +55,7 @@ export function requestCreateOrder(
 
   return new Promise((resolve, reject) => {
     const req = client.request(
-      `${baseUrl}/payment/v1/merchant/preOrder`,
+      `${baseUrl}/payment/v1/merchant/refund`,
       {
         method: "POST",
         headers: {
@@ -96,7 +85,7 @@ export function requestCreateOrder(
 
           if (status < 200 || status >= 300) {
             return reject({
-              message: "Telebirr preorder request failed",
+              message: "Telebirr refund request failed",
               status,
               data: parsed,
               headers: res.headers,
@@ -114,7 +103,7 @@ export function requestCreateOrder(
 
     req.on("error", (err) => {
       reject({
-        message: "Telebirr preorder network error",
+        message: "Telebirr refund network error",
         cause: err,
         code: (err as any).code,
       });

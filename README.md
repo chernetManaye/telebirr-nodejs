@@ -1,219 +1,205 @@
-telebirr-node
+# telebirr-nodejs
 
-A simple, opinionated Node.js SDK for integrating Telebirr payments (C2B) with automatic signing, token handling, and checkout URL generation.
+A simple, opinionated Node.js SDK for integrating **Telebirr C2B payments** with automatic request signing, Fabric token handling, and checkout URL generation.
 
-Designed to be:
+---
 
-Simple to use
-Spec-aligned with Telebirr
-Production-ready
-Framework-agnostic (Express, Fastify, etc.)
+## Installation
 
-Installation
+```bash
+npm install telebirr-nodejs
+```
 
-npm install telebirr-node
+---
 
-Required Configuration
+## Required Configuration
 
-Telebirr requires five credentials, plus callback URLs.
-You should never hard-code secrets.
-Always load them from process.env.
+Telebirr requires credentials and callback URLs.
+You should never hard-code secrets. Always load them from process.env.
 
-Required credentials
-Name Description
-FABRIC_APP_ID Fabric application ID
-FABRIC_APP_SECRET Fabric application secret
-MERCHANT_APP_ID Merchant app ID
-MERCHANT_CODE Merchant code
-MERCHANT_PRIVATE_KEY RSA private key (PEM string)
-Required URLs
-Name Description
-TELEBIRR_NOTIFY_URL Server-to-server callback
-TELEBIRR_REDIRECT_URL User redirect after payment
+---
 
-Basic Setup
-import { TelebirrClient } from "telebirr-node";
+### Required Credentials
+
+| Name                   | Description                                                                            |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `FABRIC_APP_ID`        | Fabric application ID (c4182ef8-9249-458a-985e-06d191f4d505 uuid-v4 string)            |
+| `FABRIC_APP_SECRET`    | Fabric application secret ("fad0f06383c6297f54rr78694b974599" 32 hex character string) |
+| `MERCHANT_APP_ID`      | Merchant application ID ("7606201678956824" 16 integer character string)               |
+| `MERCHANT_CODE`        | Merchant code ("000000" 6 integer character string)                                    |
+| `MERCHANT_PRIVATE_KEY` | RSA private key (PEM string)                                                           |
+
+---
+
+### Required URLs
+
+| Name                    | Description                     |
+| ----------------------- | ------------------------------- |
+| `TELEBIRR_NOTIFY_URL`   | Server-to-server callback URL   |
+| `TELEBIRR_REDIRECT_URL` | User redirect URL after payment |
+
+---
+
+### Basic Setup
+
+---
+
+```bash
+import { TelebirrClient } from "telebirr-nodejs";
 
 const client = new TelebirrClient({
-mode: "sandbox", // "simulate" | "sandbox" | "production"
-
-fabricAppId: process.env.FABRIC_APP_ID!,
-appSecret: process.env.FABRIC_APP_SECRET!,
-
-merchantAppId: process.env.MERCHANT_APP_ID!,
-merchantCode: process.env.MERCHANT_CODE!,
-privateKey: process.env.MERCHANT_PRIVATE_KEY!,
-
-notifyUrl: process.env.TELEBIRR_NOTIFY_URL!,
-redirectUrl: process.env.TELEBIRR_REDIRECT_URL!,
-
-http: true, // allow http in simulator
-IntegrationOption: "C2B",
+  mode: "sandbox", // "simulate" | "sandbox" | "production"
+  appId: process.env.FABRIC_APP_ID!,
+  appSecret: process.env.FABRIC_APP_SECRET!,
+  merchantAppId: process.env.MERCHANT_APP_ID!,
+  merchantCode: process.env.MERCHANT_CODE!,
+  merchantPrivateKey: process.env.MERCHANT_PRIVATE_KEY!,
+  notifyUrl: process.env.TELEBIRR_NOTIFY_URL!,
+  redirectUrl: process.env.TELEBIRR_REDIRECT_URL!,
+  http: true, // allow HTTP in simulator mode
+  IntegrationOption: "C2B",
 });
+```
 
-MERCHANT_PRIVATE_KEY must be the full PEM string, including
+---
+
+### Important
+
+MERCHANT_PRIVATE_KEY must be the full PEM string, including:
+
+```bash
 -----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----
+```
 
-Express Demo (Simulator)
+---
 
-Below is a complete demo using three routes:
+### Example API Routes
 
-POST /payment/initiate
-POST /payment/refund
-GET /payment/status/:merchOrderId
+1. POST /payment/initiate
+2. GET /payment/status
+3. POST /payment/refund
 
-Initiate Payment
+---
 
-Creates an order and redirects the user to Telebirr checkout.
+### 1. Initiate Payment
 
+Creates an order and redirects the user to the Telebirr checkout page.
+
+```bash
 app.post("/payment/initiate", async (req, res) => {
-const checkoutUrl = await client.generateCheckoutUrl({
-merchOrderId: "order123",
-title: "Phone",
-amount: "12",
-callbackInfo: "from web checkout",
+    const checkoutUrl = await client.preOrder({
+        merchOrderId: "order123",
+        title: "Phone",
+        amount: "12",
+        callbackInfo: "from web checkout",
+    });
+
+    res.redirect(checkoutUrl);
 });
+```
 
-res.redirect(checkoutUrl);
-});
+If you are using a frontend framework (for example React) and do not want to lose application state, return the checkout URL as JSON and let the frontend handle the redirection.
 
-What happens internally:
+---
 
-Fabric token is fetched (and cached)
+### 2. Query Payment Status
 
-Order is signed and created
+Used to check the payment result using the merchant order ID.
 
-Checkout URL is generated
-
-User is redirected
-if you are using frontend frame work like react and do not want to lose state only send the checkout url as a json reponse and let the frame work handle the redirection
-
-Query Payment Status
-
-Used to check payment result by merchant order ID.
-
+```bash
 app.get("/payment/status/:merchOrderId", async (req, res) => {
-const { merchOrderId } = req.params;
+    const { merchOrderId } = req.body;
 
-const info = await client.queryOrder(merchOrderId);
+    const info = await client.queryOrder(merchOrderId);
 
-res.json(info);
+    res.json(info);
 });
+```
 
-Typical use cases:
+Please refer to Telebirr’s official documentation to correctly handle the query order json response:
+https://developer.ethiotelecom.et/docs/H5%20C2B%20Web%20Payment%20Integration%20Quick%20Guide/queryOrder
 
-Payment confirmation page
+---
 
-Background reconciliation
-
-Admin dashboard
-
-Refund Payment
+### 3. Refund Payment
 
 Refunds a completed transaction.
 
+```bash
 app.post("/payment/refund", async (req, res) => {
-const refundData = await client.refund({
-merchOrderId: "order123",
-refundRequestNo: "original-transaction-id",
-refundReason: "customer request",
-amount: "12",
+    const refundData = await client.refundOrder({
+        merchOrderId: "order123",
+        refundRequestNo: "original-transaction-id",
+        refundReason: "customer request",
+        amount: "12",
+    });
+
+    res.json(refundData);
 });
 
-res.json(refundData);
-});
+```
 
-Notes:
+Please refer to Telebirr’s official documentation to correctly handle the refund order json response:
+https://developer.ethiotelecom.et/docs/H5%20C2B%20Web%20Payment%20Integration%20Quick%20Guide/RefundOrder
 
-refundRequestNo must be unique
+---
 
-Refund amount ≤ original payment amount
+### Simulator Mode
 
-🧪 Simulator Mode
+To use the simulator provided by this package, set the mode to simulate.
 
-To use the Simulator provided by the package:
-
-import { generateCredentials } from "./src/utils/credentials";
-import { TelebirrClient } from "./src/client/telebirrClient";
-
-const creds = generateCredentials();
+```bash
+import { TelebirrClient } from "telebirr-nodejs";
 
 const client = new TelebirrClient({
-mode: "simulate",
-fabricAppId: creds.fabricAppId,
-appSecret: creds.fabricAppSecret,
-merchantAppId: creds.merchantAppId,
-merchantCode: creds.merchantCode,
-privateKey: creds.merchantPrivateKey,
-notifyUrl: "https://example.com/notify",
-redirectUrl: "https://example.com/redirect",
-http: true,
-IntegrationOption: "C2B",
+    mode: "simulate",
+    notifyUrl: "https://example.com/notify",
+    redirectUrl: "https://example.com/redirect",
+    http: true,
+    IntegrationOption: "C2B",
 });
 
-this is for only learning purpose the server is provided by the package provider not telebirr if you want real simulation use telebirrs sandbox in the mode property and white list your public IP address in telebirr
+```
 
-Simulator characteristics:
+This simulator is for learning and development purposes only.
+The simulation server is provided by this package, not by Telebirr. For real testing, use Telebirr’s sandbox mode and whitelist your public IP address in the Telebirr portal.
 
-No real money
-HTTP allowed
-Faster testing cycle
-Same signing rules as production
-Supported Features
+---
 
-✔ Fabric token handling
+### Supported Features
 
-✔ RSA-SHA256 signing
+- Fabric token handling
+- RSA-SHA256 request signing
+- C2B checkout
+- Order query
+- Refunds
+- Simulator support
+- Notify URL Handling
 
-✔ C2B checkout
+Please refer to Telebirr’s official documentation to correctly handle notify callbacks:
 
-✔ Order query
-
-✔ Refund
-
-✔ Simulator support
-
-check about about notify url in telebirr official documentation to handle the response properly
 https://developer.ethiotelecom.et/docs/H5%20C2B%20Web%20Payment%20Integration%20Quick%20Guide/Notify_Callback
 
-import { generateCredentials } from "./src/utils/credentials";
-import { TelebirrClient } from "./src/client/telebirrClient";
+---
 
-const creds = generateCredentials();
+### RSA Key Generation
 
-const client = new TelebirrClient({
-mode: "simulate", // "sandbox" | "production"
-fabricAppId: creds.fabricAppId,
-appSecret: creds.fabricAppSecret,
-merchantAppId: creds.merchantAppId,
-merchantCode: creds.merchantCode,
-privateKey: creds.merchantPrivateKey,
-notifyUrl: "https://example.com/notify",
-redirectUrl: "https://example.com/redirect",
-http: true,
-IntegrationOption: "C2B",
+You can generate private and public keys instantly.
+
+```bash
+import { generateKeys } from "telebirr-nodejs";
+
+generateKeys({
+    dir: process.cwd(),
+    privateKeyName: "telefy_private.pem",
+    publicKeyName: "telefy_public.pem",
+    overwrite: false,
 });
 
-const checkoutUrl = await client.GenerateCheckoutUrl({
-merchOrderId: "order123",
-title: "Phone",
-amount: "12",
-callbackInfo: "some custom text",
-});
+```
 
-res.redirect(checkoutUrl);
+This will generate two .pem files in your root directory.
 
-const merchOrderId = "order123";
-
-const info = await client.queryOrder(merchOrderId);
-
-console.log(info);
-
-const refundData = await client.refund({
-merchOrderId: "order123",
-refundRequestNo: "transaction number of the original payment",
-refundReason: "normal message",
-amount: "120",
-});
-
-console.log(refundData);
+The merchantPrivateKey option always accepts a string, so you must read the private key file using Node.js fs and pass the value to the client configuration.

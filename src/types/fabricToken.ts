@@ -1,4 +1,4 @@
-import { TelebirrMode } from "../config/telebirrConfig";
+import { TelebirrMode } from "./telebirrConfig";
 export interface ApplyFabricTokenRequest {
   appSecret: string;
   mode: TelebirrMode;

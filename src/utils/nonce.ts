@@ -1,16 +1,6 @@
-import crypto from "crypto";
+import { randomBytes } from "crypto";
 
-export function createNonceStr(length = 32): string {
-  // Telebirr allows only alphanumeric characters
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  const bytes = crypto.randomBytes(length);
-  let result = "";
-
-  for (let i = 0; i < length; i++) {
-    result += chars[bytes[i] % chars.length];
-  }
-
-  return result;
+export function createNonceStr(): string {
+  const bytes = Math.ceil(16);
+  return randomBytes(bytes).toString("hex").slice(0, 32);
 }

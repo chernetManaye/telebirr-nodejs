@@ -1,3 +1,3 @@
-export { TelebirrClient } from "./client/telebirrClient";
-export { generateCredentials } from "./utils/credentials";
-export type { TelebirrConfig } from "./config/telebirrConfig";
+export { TelebirrClient } from "./client";
+export { generateKeys } from "./utils/keys";
+export type { TelebirrConfig } from "./types/telebirrConfig";

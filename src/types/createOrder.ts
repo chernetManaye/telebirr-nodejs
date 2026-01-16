@@ -9,7 +9,10 @@ export type SignType = "SHA256WithRSA";
 
 export type ApiVersion = "1.0";
 
-export type PaymentMethod = "payment.preorder" | "payment.refund";
+export type PaymentMethod =
+  | "payment.preorder"
+  | "payment.refund"
+  | "payment.queryorder";
 
 export type TradeType =
   | "InApp"

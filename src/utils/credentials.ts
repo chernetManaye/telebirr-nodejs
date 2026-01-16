@@ -1,16 +1,10 @@
-import { randomUUID, randomBytes } from "crypto";
-import { Sonyflake } from "sonyflake";
-import { customAlphabet } from "nanoid";
 import fs from "fs";
-import path from "path";
+import { randomUUID, randomBytes } from "crypto";
+import { customAlphabet } from "nanoid";
+import { generateKeys } from "./keys";
 
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const sf = new Sonyflake();
-const generateMerchantCode = customAlphabet("0123456789", 6);
+const numeric16 = customAlphabet("0123456789", 16);
+const numeric6 = customAlphabet("0123456789", 6);
 
 export interface SimulatorCredentials {
   fabricAppId: string;
@@ -20,14 +14,16 @@ export interface SimulatorCredentials {
   merchantPrivateKey: string;
 }
 
-export function generateCredentials(
-  merchantPrivateKey: string
-): SimulatorCredentials {
+export function generateCredentials(): SimulatorCredentials {
+  const { privateKeyPath } = generateKeys();
+
+  const merchantPrivateKey = fs.readFileSync(privateKeyPath, "utf8");
+
   return {
     fabricAppId: randomUUID(),
     fabricAppSecret: randomBytes(16).toString("hex"),
-    merchantAppId: sf.nextId().toString(),
-    merchantCode: generateMerchantCode(),
+    merchantAppId: numeric16(),
+    merchantCode: numeric6(),
     merchantPrivateKey,
   };
 }
