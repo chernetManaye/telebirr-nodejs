@@ -21,13 +21,13 @@ You should never hard-code secrets. Always load them from process.env.
 
 ### Required Credentials
 
-| Name                   | Description                                                                            |
-| ---------------------- | -------------------------------------------------------------------------------------- |
-| `FABRIC_APP_ID`        | Fabric application ID (c4182ef8-9249-458a-985e-06d191f4d505 uuid-v4 string)            |
-| `FABRIC_APP_SECRET`    | Fabric application secret ("fad0f06383c6297f54rr78694b974599" 32 hex character string) |
-| `MERCHANT_APP_ID`      | Merchant application ID ("7606201678956824" 16 integer character string)               |
-| `MERCHANT_CODE`        | Merchant code ("000000" 6 integer character string)                                    |
-| `MERCHANT_PRIVATE_KEY` | RSA private key (PEM string)                                                           |
+| Name                | Description                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| `FABRIC_APP_ID`     | Fabric application ID (c4182ef8-9249-458a-985e-06d191f4d505 uuid-v4 string)            |
+| `FABRIC_APP_SECRET` | Fabric application secret ("fad0f06383c6297f54rr78694b974599" 32 hex character string) |
+| `MERCHANT_APP_ID`   | Merchant application ID ("7606201678956824" 16 integer character string)               |
+| `MERCHANT_CODE`     | Merchant code ("000000" 6 integer character string)                                    |
+| `PRIVATE_KEY`       | RSA private key (PEM string)                                                           |
 
 ---
 
@@ -53,7 +53,7 @@ const c2bClient = new C2B({
   appSecret: process.env.FABRIC_APP_SECRET,
   merchantAppId: process.env.MERCHANT_APP_ID,
   merchantCode: process.env.MERCHANT_CODE,
-  privateKey: process.env.MERCHANT_PRIVATE_KEY,
+  privateKey: process.env.PRIVATE_KEY,
   notifyUrl: process.env.TELEBIRR_NOTIFY_URL,
   redirectUrl: process.env.TELEBIRR_REDIRECT_URL,
   http: true, // allow HTTP in simulator mode
@@ -158,7 +158,7 @@ const c2bClient = new C2B({
     appSecret: process.env.FABRIC_APP_SECRET,
     merchantAppId: process.env.MERCHANT_APP_ID,
     merchantCode: process.env.MERCHANT_CODE,
-    privateKey: process.env.MERCHANT_PRIVATE_KEY,
+    privateKey: process.env.PRIVATE_KEY,
     notifyUrl: "https://example.com/notify",
     redirectUrl: "https://example.com/redirect",
     http: true
@@ -166,7 +166,7 @@ const c2bClient = new C2B({
 
 ```
 
-This mode will generate credentials and add the in .env file in your project root directory
+This mode will generate credentials and add them in .env file in your project root directory
 The simulator is for learning and development purposes only.
 The simulation server is provided by this package, not by Telebirr. For real testing, use Telebirr’s sandbox mode and whitelist your public IP address in the Telebirr portal.
 
